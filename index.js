@@ -152,14 +152,18 @@ async function getIp(msg, player){
 	}
 }
 async function changePassword(msg, player){
-	await rcon.connect()
-	let response = ''
-	await rconPost('authme password '+player+' temp123').then(r => {response = r})
-	console.log(response)
-	let discordResponse = ''
-	discordResponse = 'Временный пароль игрока '+player+' установлен на temp123.'
-	msg.reply(discordResponse)
-	rcon.end()
+	if(!adminAccounts.includes(player.toLowerCase())){
+		await rcon.connect()
+		let response = ''
+		await rconPost('authme password '+player+' temp123').then(r => {response = r})
+		console.log(response)
+		let discordResponse = ''
+		discordResponse = 'Временный пароль игрока '+player+' установлен на temp123.'
+		msg.reply(discordResponse)
+		rcon.end()
+	} else {
+		msg.reply(`Ага, конечно.`)
+	}
 }
 async function checkBan(msg, player){
 	await rcon.connect()
