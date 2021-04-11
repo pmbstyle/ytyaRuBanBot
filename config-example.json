@@ -1,0 +1,13 @@
+{
+	"token": "",
+	"host": "",
+	"port": 25565,
+	"password": "",
+	"serverInfoInterval": 10000,
+	"tryConnectionInterval": 10000,
+	"defaultActivity": "Default Discord Activity Message",
+	"rconChannel": "",
+	"modRole": "",
+	"adminRole":  "",
+	"reportChannel": ""
+}
