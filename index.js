@@ -44,7 +44,7 @@ client.on("message", msg => {
 
 
 	if (msg.channel.id === config.rconChannel){
-		if (msg.member.roles._roles.find(r => r.id === config.adminRole)){
+		if (checkRole(msg.member.roles._roles,config.adminRole)){
 			//admin commands
 			switch(action.type) {
 				case 'ban':
@@ -75,36 +75,44 @@ client.on("message", msg => {
 			}
 		}
 		//moderator commands
-	  	else if (msg.member.roles.find(r => r.id === config.modRole)){
-			if (modCommands.indexOf(msg.toString().split(" ")[0]) > -1){
-				switch(action.type) {
-					case 'ban':
-						banPlayer(msg, action.user, action.reason)
-						break
-					case 'ban-ip':
-						banPlayerByIP(msg, action.user, action.reason)
-						break
-					case 'checkban':
-						checkBan(msg, action.user)
-						break
-					case 'getip':
-						getIp(msg, action.user)
-						break
-					case 'setpassword':
-						changePassword(msg, action.user)
-						break
-					case 'commands':
-						msg.reply(
-						`\nДоступные команды:\n!ban <ник> <причина> - глобальный бан аккаунта\n!ban-ip <ник> <причина> - глобальный бан аккаунта по IP\n!checkban <ник> - проверка бана\n!getip <ник> - получить IP игрока\n!setpassword <ник> - установить временный пароль`)
-						break
-					default:
-						msg.reply(`Неправильная команда, список команд доступен по !commands`)
-						break
-				}
+	  	else if (checkRole(msg.member.roles._roles,config.modRole)){
+			switch(action.type) {
+				case 'ban':
+					banPlayer(msg, action.user, action.reason)
+					break
+				case 'ban-ip':
+					banPlayerByIP(msg, action.user, action.reason)
+					break
+				case 'checkban':
+					checkBan(msg, action.user)
+					break
+				case 'getip':
+					getIp(msg, action.user)
+					break
+				case 'setpassword':
+					changePassword(msg, action.user)
+					break
+				case 'commands':
+					msg.reply(
+					`\nДоступные команды:\n!ban <ник> <причина> - глобальный бан аккаунта\n!ban-ip <ник> <причина> - глобальный бан аккаунта по IP\n!checkban <ник> - проверка бана\n!getip <ник> - получить IP игрока\n!setpassword <ник> - установить временный пароль`)
+					break
+				default:
+					msg.reply(`Неправильная команда, список команд доступен по !commands`)
+					break
 			}
 		}
 	}
-});
+})
+
+function checkRole(roles, role) {
+	let check = false
+	roles.map(r => {
+		if(r.id == role) {
+			check = true
+		}
+	})
+	return check
+}
 
 //RCON Commands
 async function banPlayer(msg, player, reason){
@@ -112,8 +120,7 @@ async function banPlayer(msg, player, reason){
 		await rcon.connect()
 		let response = ''
 		await rconPost('cmi ban '+player+' '+reason).then(r => {response = r})
-		let discordResponse = ''
-		discordResponse = 'Игрок '+player+' был забанен по причине: '+reason+'.'
+		let discordResponse = 'Игрок '+player+' был забанен по причине: '+reason+'.'
 		msg.reply(discordResponse)
 		rcon.end()
 	} else {
@@ -125,7 +132,7 @@ async function banPlayerByIP(msg, player, reason){
 		await rcon.connect()
 		let response = ''
 		await rconPost('cmi ipban '+player+' '+reason).then(r => {response = r})
-		discordResponse = 'Игрок '+player+' был забанен по IP по причине: '+reason+'.'
+		let discordResponse = 'Игрок '+player+' был забанен по IP по причине: '+reason+'.'
 		msg.reply(discordResponse)
 		rcon.end()
 	} else {
@@ -157,8 +164,7 @@ async function changePassword(msg, player){
 		let response = ''
 		await rconPost('authme password '+player+' temp123').then(r => {response = r})
 		console.log(response)
-		let discordResponse = ''
-		discordResponse = 'Временный пароль игрока '+player+' установлен на temp123.'
+		let discordResponse = 'Временный пароль игрока '+player+' установлен на temp123.'
 		msg.reply(discordResponse)
 		rcon.end()
 	} else {
@@ -210,18 +216,7 @@ async function tryConnection(){
 	rcon.end()
 }
 
-// Listeners for connections/disconnections/errors
-rcon.on('connect', function() {
-	console.log('RCON Connected')
-})
-rcon.on('authenticated', function() {
-	console.log('RCON Authenticated')
-})
-
-rcon.on('end', function(){
-	console.log('RCON Disconnected')
-})
-
+// Listeners for errors
 rcon.on('error', function(err) {
 	console.log('ERROR: ', err)
 })
