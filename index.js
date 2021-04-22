@@ -13,16 +13,6 @@ const adminAccounts = [
 	"pmb"
 ]
 
-const modCommands = [
-	"commands",
-	"ban",
-	"ban-ip",
-	"checkban",
-	"getip",
-	"setpassword"
-]
-
-
 client.on("ready", () => {
 	console.log("Ready")
 	tryConnection()
@@ -148,11 +138,24 @@ async function getIp(msg, player){
 		if(response.search('is not registered') == '-1'){
 			let ipmask = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g
 			let t = response.match(ipmask)
-			discordResponse = 'Игрок '+player+' последний раз заходил с IP: '+t[0]+'. Зарегистрирован с IP: '+t[0]+'.'
+			msg.channel.send({embed: {
+				color: 3447003,
+				title: "Игрок "+player,
+				fields: [{
+					name: "Последний раз заходил с IP",
+					value: "["+t[0]+"](https://whatismyipaddress.com/ip/"+t[0]+")"
+				  },
+				  {
+					name: "Зарегистрирован с IP",
+					value: "["+t[1]+"](https://whatismyipaddress.com/ip/"+t[1]+")"
+				  }
+				]
+			  }
+			})
 		} else {
 			discordResponse = 'Игрок с ником '+player+' не найден.'
+			msg.reply(discordResponse)
 		}
-		msg.reply(discordResponse)
 		rcon.end()
 	} else {
 		msg.reply(`Нет уж, это мы тебе не расскажем.`)
