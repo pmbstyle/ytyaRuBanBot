@@ -55,9 +55,12 @@ client.on("message", msg => {
 				case 'unban':
 					unbanBan(msg, action.user)
 					break
+				case 'recent':
+					getLatest(msg)
+					break
 				case 'commands':
 					msg.reply(
-					`\nДоступные команды:\n!ban <ник> <причина> - глобальный бан аккаунта\n!ban-ip <ник>  <причина> - глобальный бан аккаунта по IP\n!checkban <ник> - проверка бана\n!unban <ник> - разбанить(так же снимает бан по IP)\n!getip <ник> - получить IP игрока\n!setpassword <ник> - установить временный пароль`)
+					`\nДоступные команды:\n!ban <ник> <причина> - глобальный бан аккаунта\n!ban-ip <ник>  <причина> - глобальный бан аккаунта по IP\n!checkban <ник> - проверка бана\n!unban <ник> - разбанить(так же снимает бан по IP)\n!getip <ник> - получить IP игрока\n!setpassword <ник> - установить временный пароль\n!recent - список последних аутентификаций с ip и ником`)
 					break
 				default:
 					msg.reply(`Неправильная команда, список команд доступен по !commands`)
@@ -82,9 +85,12 @@ client.on("message", msg => {
 				case 'setpassword':
 					changePassword(msg, action.user)
 					break
+				case 'recent':
+					getLatest(msg)
+					break
 				case 'commands':
 					msg.reply(
-					`\nДоступные команды:\n!ban <ник> <причина> - глобальный бан аккаунта\n!ban-ip <ник> <причина> - глобальный бан аккаунта по IP\n!checkban <ник> - проверка бана\n!getip <ник> - получить IP игрока\n!setpassword <ник> - установить временный пароль`)
+					`\nДоступные команды:\n!ban <ник> <причина> - глобальный бан аккаунта\n!ban-ip <ник> <причина> - глобальный бан аккаунта по IP\n!checkban <ник> - проверка бана\n!getip <ник> - получить IP игрока\n!setpassword <ник> - установить временный пароль\n!recent - список последних аутентификаций с ip и ником`)
 					break
 				default:
 					msg.reply(`Неправильная команда, список команд доступен по !commands`)
@@ -206,6 +212,27 @@ async function unbanBan(msg, player){
 	}
 	msg.reply(discordResponse)
 	rcon.end()
+}
+async function getLatest(msg){
+	await rcon.connect()
+    let response = ''
+	await rconPost('authme recent').then(r => {response = r})
+    rcon.end()
+    let players = response.split('- ')
+    players.shift()
+    let latestPlayers = []
+    players.forEach(p => {
+        let name = p.split(' (')[0].split(' ')[0]
+        let ipmask = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g
+		let ip = p.match(ipmask)
+        latestPlayers.push({name:name, value:"["+ip+"](https://whatismyipaddress.com/ip/"+ip+")"})
+    })
+	msg.channel.send({embed: {
+		color: 3447003,
+		title: "Последние залогиневшиеся игроки",
+		fields: latestPlayers
+	  }
+	})
 }
 
 // Try RCON connection
